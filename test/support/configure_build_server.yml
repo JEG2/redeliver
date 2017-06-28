@@ -1,0 +1,32 @@
+---
+- hosts: build
+  handlers:
+    - name: force package cache update
+      become: true
+      apt:
+        update_cache: yes
+  tasks:
+    - name: Fetch Erlang Solutions repository
+      get_url:
+        url: https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+        dest: /tmp/erlang-solutions_1.0_all.deb
+    - name: Add Erlang Solutions repository
+      become: true
+      apt:
+        deb: /tmp/erlang-solutions_1.0_all.deb
+      notify:
+        - force package cache update
+    - name: Update cache if needed
+      meta: flush_handlers
+    - name: Install Erlang
+      become: true
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name: esl-erlang=1:20.0
+        state: present
+    - name: Install Elixir
+      become: true
+      apt:
+        name: elixir=1.4.5-1
+        state: present
